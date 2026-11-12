@@ -23,7 +23,8 @@ self.addEventListener('fetch', (e) => {
         if (r.ok && !inApp) (await caches.open(STATIC)).put(e.request, r.clone());
         return r;
       } catch (err) {
-        const hit = await caches.match(e.request, { ignoreSearch: true });
+        // no signal: the lock screen (/ or /index.html) and everything else from the phone's cache
+        const hit = (await caches.match(e.request, { ignoreSearch: true })) || (e.request.mode === 'navigate' && !inApp ? await caches.match(new URL('./', self.registration.scope).href) : null);
         if (hit) return hit;
         throw err;
       }
